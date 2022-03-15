@@ -1,5 +1,7 @@
 # DotENV
 
+Loads environment variables from `.env` or `.env.php` file.
+
 [![Latest Stable Version](http://poser.pugx.org/initphp/dotenv/v)](https://packagist.org/packages/initphp/dotenv) [![Total Downloads](http://poser.pugx.org/initphp/dotenv/downloads)](https://packagist.org/packages/initphp/dotenv) [![Latest Unstable Version](http://poser.pugx.org/initphp/dotenv/v/unstable)](https://packagist.org/packages/initphp/dotenv) [![License](http://poser.pugx.org/initphp/dotenv/license)](https://packagist.org/packages/initphp/dotenv) [![PHP Version Require](http://poser.pugx.org/initphp/dotenv/require/php)](https://packagist.org/packages/initphp/dotenv)
 
 ## Requirements
