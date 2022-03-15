@@ -1,0 +1,23 @@
+{
+    "name": "initphp/dotenv",
+    "description": "DotENV Library/Package",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "files": [
+            "src/Dotenv.php"
+        ]
+    },
+    "authors": [
+        {
+            "name": "Muhammet ŞAFAK",
+            "email": "info@muhammetsafak.com.tr",
+            "role": "Developer",
+            "homepage": "https://www.muhammetsafak.com.tr"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "php": ">=7.4"
+    }
+}
