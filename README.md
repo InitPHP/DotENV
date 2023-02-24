@@ -1,4 +1,4 @@
-# DotENV
+# InitPHP DotENV
 
 Loads environment variables from `.env` or `.env.php` file.
 
@@ -6,15 +6,13 @@ Loads environment variables from `.env` or `.env.php` file.
 
 ## Requirements
 
-- PHP 7.4 or higher
+- PHP 5.6 or higher
 
 ## Installation
 
 ```php 
 composer require initphp/dotenv
 ```
-
-or include the `src/Dotenv.php` file.
 
 ## Usage
 
@@ -51,20 +49,20 @@ PI_NUMBER = 3.14
 
 ```php 
 require_once "vendor/autoload.php";
-use \InitPHP\Dotenv\Dotenv;
+use \InitPHP\DotENV\DotENV;
 
-Dotenv::create('/home/www/.env');
+DotENV::create('/home/www/.env');
 
-Dotenv::get('TRUE_VALE'); // true
-Dotenv::get('FALSE_VALUE'); // false
-Dotenv::get('SITE_URL'); // "http://lvh.me"
-Dotenv::get('PAGE_URL'); // "http://lvh.me/page"
-Dotenv::get('EMPTY_VALUE'); // ""
-Dotenv::get('NULL_VALUE'); // NULL
-Dotenv::get('NUMERIC_VALUE'); // 13
-Dotenv::get('PI_NUMBER'); // 3.14
+DotENV::get('TRUE_VALE'); // true
+DotENV::get('FALSE_VALUE'); // false
+DotENV::get('SITE_URL'); // "http://lvh.me"
+DotENV::get('PAGE_URL'); // "http://lvh.me/page"
+DotENV::get('EMPTY_VALUE'); // ""
+DotENV::get('NULL_VALUE'); // NULL
+DotENV::get('NUMERIC_VALUE'); // 13
+DotENV::get('PI_NUMBER'); // 3.14
 
-Dotenv::get('NOT_FOUND', 'hi'); // "hi"
+DotENV::get('NOT_FOUND', 'hi'); // "hi"
 ```
 
 ### `.env.php`
@@ -88,22 +86,22 @@ return [
 
 ```php 
 require_once "vendor/autoload.php";
-use \InitPHP\Dotenv\Dotenv;
+use \InitPHP\DotENV\DotENV;
 
-Dotenv::create('/home/www/.env.php');
+DotENV::create('/home/www/.env.php');
 
 
-Dotenv::get('TRUE_VALE'); // true
-Dotenv::get('FALSE_VALUE'); // false
-Dotenv::get('SITE_URL'); // "http://lvh.me"
-Dotenv::get('EMPTY_VALUE'); // ""
-Dotenv::get('NULL_VALUE'); // NULL
-Dotenv::get('NUMERIC_VALUE'); // 13
+DotENV::get('TRUE_VALE'); // true
+DotENV::get('FALSE_VALUE'); // false
+DotENV::get('SITE_URL'); // "http://lvh.me"
+DotENV::get('EMPTY_VALUE'); // ""
+DotENV::get('NULL_VALUE'); // NULL
+DotENV::get('NUMERIC_VALUE'); // 13
 
-Dotenv::get('NOT_FOUND', 'hi'); // "hi"
+DotENV::get('NOT_FOUND', 'hi'); // "hi"
 ```
 
-### `Dotenv::create()`
+### `DotENV::create()`
 
 Reads and defines an `.env` or `.env.php` file.
 
@@ -116,7 +114,7 @@ public function create(string $path, bool $debug = true): void;
 
 **Note :** If the file is not found, the file is not a `.env`/`.env.php` file, or is unreadable, it throws a `\Exception` variant.
 
-### `Dotenv::get()`
+### `DotENV::get()`
 
 Returns an ENV value.
 
@@ -128,7 +126,7 @@ public function get(string $name, mixed $default = null): mixed;
 
 `$_ENV` -> `$_SERVER` -> `getenv()`
 
-### `Dotenv::env()`
+### `DotENV::env()`
 
 It's an alias for the `Dotenv::get()` method.
 
