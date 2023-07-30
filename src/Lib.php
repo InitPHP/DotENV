@@ -144,7 +144,8 @@ final class Lib
                 if (preg_match('/^"(.*)"/i', $value, $matches) || preg_match("/^'(.*)'/i", $value, $matches)) {
                     $value = $matches[1];
                 } else {
-                    if (preg_match('/[ \t]*+(?:#.*)?$/i', $value, $matches)) {
+                    preg_match('/[ \t]*+(?:#.*)?$/i', $value, $matches);
+                    if (!empty($matches[0])) {
                         $value = substr($value, 0, (0 - strlen($matches[0])));
                     }
                     $value = trim($value);
