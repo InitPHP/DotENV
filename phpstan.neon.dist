@@ -1,0 +1,14 @@
+parameters:
+    level: max
+    paths:
+        - src
+        - tests
+    tmpDir: build/phpstan
+    excludePaths:
+        # BC shim: registers the legacy `Lib` class name via class_alias().
+        # PHPStan cannot model a class created at runtime that has no
+        # declaration of its own, which is the whole point of the file.
+        - src/Lib.php
+        # Exercises that runtime alias; the symbol does not exist statically.
+        - tests/LibBackwardsCompatibilityTest.php
+    treatPhpDocTypesAsCertain: false

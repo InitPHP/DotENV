@@ -1,48 +1,92 @@
 <?php
+
 /**
  * DotENV.php
  *
- * This file is part of InitPHP.
+ * This file is part of InitPHP DotENV.
  *
  * @author     Muhammet ŞAFAK <info@muhammetsafak.com.tr>
  * @copyright  Copyright © 2022 InitPHP
- * @license    https://initphp.github.io/license.txt  MIT
- * @version    2.0
+ * @license    https://github.com/InitPHP/DotENV/blob/main/LICENSE  MIT
  * @link       https://www.muhammetsafak.com.tr
  */
+
+declare(strict_types=1);
 
 namespace InitPHP\DotENV;
 
 /**
- * @method static void create(string $path, bool $debug = true)
+ * Static facade over a shared {@see Repository} instance.
+ *
+ * ```php
+ * DotENV::create('/path/to/project');
+ * $url = DotENV::get('SITE_URL');
+ * ```
+ *
+ * @method static void  create(string $path, bool $debug = true)
  * @method static mixed get(string $name, mixed $default = null)
  * @method static mixed env(string $name, mixed $default = null)
+ * @method static void  flush()
+ *
+ * @see Repository
  */
-class DotENV
+final class DotENV
 {
-
-    /** @var Lib */
-    protected static $instance;
+    /** @var Repository|null The shared repository instance. */
+    private static ?Repository $instance = null;
 
     /**
-     * @return Lib
+     * Returns the shared repository, creating it on first use.
+     *
+     * @return Repository
      */
-    protected static function getInstance()
+    public static function instance(): Repository
     {
-        if(!isset(self::$instance)){
-            self::$instance = new Lib();
+        if (self::$instance === null) {
+            self::$instance = new Repository();
         }
+
         return self::$instance;
     }
 
-    public function __call($name, $arguments)
+    /**
+     * Flushes and drops the shared repository instance.
+     *
+     * After this call the next facade call builds a fresh repository. Useful
+     * in tests and long-running workers. Pre-existing environment variables
+     * are left untouched.
+     *
+     * @return void
+     */
+    public static function reset(): void
     {
-        return self::getInstance()->{$name}(...$arguments);
+        if (self::$instance !== null) {
+            self::$instance->flush();
+        }
+        self::$instance = null;
     }
 
-    public static function __callStatic($name, $arguments)
+    /**
+     * Forwards instance calls to the shared repository.
+     *
+     * @param string            $name
+     * @param array<int, mixed> $arguments
+     * @return mixed
+     */
+    public function __call(string $name, array $arguments): mixed
     {
-        return self::getInstance()->{$name}(...$arguments);
+        return self::instance()->{$name}(...$arguments);
     }
 
+    /**
+     * Forwards static calls to the shared repository.
+     *
+     * @param string            $name
+     * @param array<int, mixed> $arguments
+     * @return mixed
+     */
+    public static function __callStatic(string $name, array $arguments): mixed
+    {
+        return self::instance()->{$name}(...$arguments);
+    }
 }

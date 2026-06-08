@@ -1,16 +1,18 @@
 {
     "name": "initphp/dotenv",
-    "description": "DotENV Library/Package",
+    "description": "Loads environment variables from a .env or .env.php file, with type coercion and ${VAR} interpolation.",
     "type": "library",
     "license": "MIT",
-    "autoload": {
-        "psr-4": {
-            "InitPHP\\DotENV\\": "src/"
-        },
-        "files": [
-            "src/helpers.php"
-        ]
-    },
+    "keywords": [
+        "dotenv",
+        "env",
+        "environment",
+        "configuration",
+        "config",
+        "getenv",
+        "12factor",
+        "initphp"
+    ],
     "authors": [
         {
             "name": "Muhammet ŞAFAK",
@@ -19,8 +21,60 @@
             "homepage": "https://www.muhammetsafak.com.tr"
         }
     ],
-    "minimum-stability": "stable",
+    "support": {
+        "issues": "https://github.com/InitPHP/DotENV/issues",
+        "source": "https://github.com/InitPHP/DotENV",
+        "docs": "https://github.com/InitPHP/DotENV/tree/main/docs"
+    },
     "require": {
-        "php": ">=5.6"
+        "php": ">=8.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.6",
+        "phpstan/phpstan": "^1.12 || ^2.1",
+        "friendsofphp/php-cs-fixer": "^3.65"
+    },
+    "autoload": {
+        "psr-4": {
+            "InitPHP\\DotENV\\": "src/"
+        },
+        "files": [
+            "src/helpers.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "InitPHP\\DotENV\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "test-coverage": "phpunit --coverage-html build/coverage",
+        "stan": "phpstan analyse --no-progress",
+        "cs-check": "php-cs-fixer fix --dry-run --diff",
+        "cs-fix": "php-cs-fixer fix",
+        "ci": [
+            "@cs-check",
+            "@stan",
+            "@test"
+        ]
+    },
+    "scripts-descriptions": {
+        "test": "Run the PHPUnit test suite.",
+        "test-coverage": "Run PHPUnit and produce an HTML coverage report under build/coverage.",
+        "stan": "Run PHPStan at the level configured in phpstan.neon.dist.",
+        "cs-check": "Report any PHP-CS-Fixer violations without modifying files.",
+        "cs-fix": "Apply PHP-CS-Fixer fixes in-place.",
+        "ci": "Run the full CI bundle locally: cs-check, stan, test."
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "extra": {
+        "branch-alias": {
+            "dev-main": "3.0.x-dev"
+        }
     }
 }
