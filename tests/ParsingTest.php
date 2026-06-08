@@ -114,6 +114,15 @@ final class ParsingTest extends DotEnvTestCase
         self::assertNull($repo->get('export EXPORTED'));
     }
 
+    public function testExportPrefixRequiresAPlainSpace(): void
+    {
+        // The `export ` strip is matched literally, so a tab after `export`
+        // is not treated as the shell prefix.
+        $repo = $this->load("export\tTABKEY=value\n");
+
+        self::assertNull($repo->get('TABKEY'));
+    }
+
     public function testKeyWithEqualsInValue(): void
     {
         $repo = $this->load("DSN=mysql:host=localhost;dbname=app\n");

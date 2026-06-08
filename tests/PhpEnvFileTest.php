@@ -40,6 +40,18 @@ final class PhpEnvFileTest extends DotEnvTestCase
         self::assertSame('http://lvh.me/page', $repo->get('PAGE_URL'));
     }
 
+    public function testNonStringValuesAreNotPushedToGetenv(): void
+    {
+        // putenv() only accepts strings, so non-string .env.php values live in
+        // $_ENV / $_SERVER (and get()), but not in getenv(). This locks that
+        // documented limitation in place.
+        $repo = $this->loadPhp("<?php return ['PORT_INT' => 8080];");
+
+        self::assertSame(8080, $repo->get('PORT_INT'));
+        self::assertFalse(getenv('PORT_INT'));
+        self::assertSame(8080, $_ENV['PORT_INT']);
+    }
+
     public function testNonArrayReturnThrows(): void
     {
         $file = $this->writeFile('<?php return "not an array";', '.env.php');

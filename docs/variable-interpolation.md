@@ -47,8 +47,22 @@ DotENV::get('C'); // "root/b/c"
 (`$_ENV` → `$_SERVER` → `getenv()`), so a reference can point at a real
 environment variable, not just another line in the same file.
 
+## How the referenced value is inserted
+
+A reference is replaced with the **string cast** of the referenced value,
+then the whole surrounding value is coerced as usual. So referencing a
+[coerced type](value-types.md) behaves like PHP's `(string)` cast:
+
+| `NAME` value | `${NAME}` inserts | `WRAP=${NAME}` becomes |
+| ------------ | ----------------- | ---------------------- |
+| `"text"`     | `text`            | `"text"`               |
+| `13`         | `13`              | `13` (int)             |
+| `true`       | `1`               | `1` (int)              |
+| `false`      | *(empty)*         | `""`                   |
+| `null`       | *(empty)*         | `""`                   |
+
 A non-scalar referenced value (an array or object loaded from a `.env.php`
-file) resolves to an empty string inside an interpolation.
+file) inserts an empty string.
 
 ## Missing references
 
@@ -64,17 +78,20 @@ DotENV::get('VALUE'); // "suffix"
 
 ## Circular references
 
-A self-reference or a cycle resolves to an empty string instead of recursing
-forever:
+A reference back to a name that is still being resolved (a self-reference or
+a cycle) is replaced with an empty string instead of recursing forever. Any
+literal text around the reference is kept:
 
 ```dotenv
 A = ${A}
 B = ${C}
 C = ${B}
+D = ${D}-tail
 ```
 
 ```php
 DotENV::get('A'); // ""
 DotENV::get('B'); // ""
 DotENV::get('C'); // ""
+DotENV::get('D'); // "-tail"   (the cyclic ${D} is dropped, "-tail" remains)
 ```

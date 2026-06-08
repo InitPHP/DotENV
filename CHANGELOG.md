@@ -34,7 +34,9 @@ documentation. The public API (`DotENV::create`, `get`, `env`, and the global
   "undefined array key" / "passing null" warnings and stored a junk key. Such
   lines are now ignored.
 - **Circular `${VAR}` references** (`A=${A}`, or `B=${C}` / `C=${B}`) recursed
-  until the stack overflowed. They now resolve to an empty string.
+  until the stack overflowed. They now resolve to an empty string while keeping
+  any literal text around the reference (`D=${D}-tail` → `-tail`), and the
+  result no longer depends on which name is read first.
 
 ### Changed
 
@@ -42,8 +44,11 @@ documentation. The public API (`DotENV::create`, `get`, `env`, and the global
   when the conversion round-trips exactly. `007`, `+905551112233`,
   values beyond `PHP_INT_MAX`, and `1e3` now stay strings instead of being
   silently mangled. `13` and `3.14` still coerce as before.
-- **Immutability check** now uses `array_key_exists()` instead of `isset()`,
-  so a pre-existing name whose value is `null` is still respected.
+- **Immutability check** now uses `array_key_exists()` instead of `isset()`
+  (so a pre-existing name whose value is `null` is still respected) and also
+  consults `getenv()`. Previously a real environment variable visible only via
+  `getenv()` (when `variables_order` excludes `E`) could be silently
+  overwritten by a `.env` file.
 - Renamed the internal worker class `Lib` to **`Repository`**. `Lib` remains
   available as a deprecated alias.
 - Documentation, comments and PHPDoc are now in English and match the actual

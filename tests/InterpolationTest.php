@@ -61,6 +61,59 @@ final class InterpolationTest extends DotEnvTestCase
         self::assertSame('hello-world-!', $repo->get('GREETING'));
     }
 
+    public function testSelfReferenceWithSurroundingTextResolvesOnce(): void
+    {
+        // Regression: the cyclic value used to be double-counted ("-tail-tail")
+        // because the recursive lookup re-resolved the whole value and cached
+        // the partial result.
+        $repo = $this->load("A=\${A}-tail\nB=pre-\${B}-post\n");
+
+        self::assertSame('-tail', $repo->get('A'));
+        self::assertSame('pre--post', $repo->get('B'));
+    }
+
+    public function testRepeatedReadOfCyclicValueIsStable(): void
+    {
+        $repo = $this->load("A=\${A}-tail\n");
+
+        self::assertSame($repo->get('A'), $repo->get('A'));
+    }
+
+    public function testWhitespaceInsideBracesIsIgnored(): void
+    {
+        $repo = $this->load("NAME=world\nGREETING=hello \${ NAME }\n");
+
+        self::assertSame('hello world', $repo->get('GREETING'));
+    }
+
+    public function testEmptyBracesAreLeftLiteral(): void
+    {
+        // `${}` has nothing between the braces, so the reference pattern does
+        // not match it and it is kept verbatim.
+        $repo = $this->load('VALUE=a${}b' . "\n");
+
+        self::assertSame('a${}b', $repo->get('VALUE'));
+    }
+
+    public function testWhitespaceOnlyBracesResolveToEmpty(): void
+    {
+        // `${ }` matches the pattern but the name trims to empty.
+        $repo = $this->load('VALUE=a${ }b' . "\n");
+
+        self::assertSame('ab', $repo->get('VALUE'));
+    }
+
+    public function testScalarReferencesUsePhpStringCast(): void
+    {
+        // Documented behaviour: a reference is inserted via PHP's string cast,
+        // then the whole value is re-coerced. So a referenced `true` becomes
+        // "1" (and is then coerced to int 1); a referenced `false` becomes "".
+        $repo = $this->load("FLAG=true\nWRAP=\${FLAG}\nOFF=false\nOFF_WRAP=x\${OFF}y\n");
+
+        self::assertSame(1, $repo->get('WRAP'));
+        self::assertSame('xy', $repo->get('OFF_WRAP'));
+    }
+
     private function load(string $contents): Repository
     {
         $repo = new Repository();

@@ -124,6 +124,11 @@ final class Repository
      * are coerced (`"true"`/`"false"`/`"null"`/`"empty"`, integers and
      * floats) and any `${VAR}` references are interpolated.
      *
+     * The resolved value is cached on first read, so later external changes
+     * to `$_ENV` / `$_SERVER` / `getenv()` for the same name are not picked
+     * up until {@see flush()} clears the cache. A name that is undefined is
+     * not cached, so it can still be defined and read later.
+     *
      * @param string $name    The environment variable name.
      * @param mixed  $default Returned when the variable is not defined.
      * @return mixed
@@ -133,19 +138,45 @@ final class Repository
         if (\array_key_exists($name, $this->cache)) {
             return $this->cache[$name];
         }
+        if (\in_array($name, $this->resolving, true)) {
+            // Re-entered while this same name is already being resolved: a
+            // circular `${VAR}` reference. Break the cycle with an empty
+            // string and do not cache it (the in-progress outer frame owns
+            // the cache entry).
+            return '';
+        }
         if (\array_key_exists($name, $_ENV)) {
-            return $this->cache[$name] = $this->convert($_ENV[$name]);
+            return $this->cache[$name] = $this->resolve($name, $_ENV[$name]);
         }
         if (\array_key_exists($name, $_SERVER)) {
-            return $this->cache[$name] = $this->convert($_SERVER[$name]);
+            return $this->cache[$name] = $this->resolve($name, $_SERVER[$name]);
         }
 
         $env = getenv($name);
         if ($env !== false) {
-            return $this->cache[$name] = $this->convert($env);
+            return $this->cache[$name] = $this->resolve($name, $env);
         }
 
         return $default;
+    }
+
+    /**
+     * Coerces and interpolates a raw value while marking `$name` as being
+     * resolved, so a `${VAR}` reference back to it short-circuits in
+     * {@see get()} instead of recursing.
+     *
+     * @param string $name
+     * @param mixed  $raw
+     * @return mixed
+     */
+    private function resolve(string $name, mixed $raw): mixed
+    {
+        $this->resolving[] = $name;
+        try {
+            return $this->convert($raw);
+        } finally {
+            array_pop($this->resolving);
+        }
     }
 
     /**
@@ -373,7 +404,14 @@ final class Repository
 
     /**
      * Writes parsed values into the environment without overwriting any name
-     * that already exists in `$_ENV` or `$_SERVER`.
+     * that is already defined.
+     *
+     * A name is considered already defined if it is present in `$_ENV`,
+     * `$_SERVER`, or `getenv()` — the same three sources {@see get()} reads
+     * from. Checking `getenv()` too matters because a real environment
+     * variable can be visible there while absent from the superglobals (when
+     * `variables_order` excludes `E`); without it, a `.env` file would
+     * silently clobber a genuine environment variable.
      *
      * @param array<string, mixed> $values
      * @return void
@@ -381,7 +419,9 @@ final class Repository
     private function store(array $values): void
     {
         foreach ($values as $key => $value) {
-            if (\array_key_exists($key, $_ENV) || \array_key_exists($key, $_SERVER)) {
+            if (\array_key_exists($key, $_ENV)
+                || \array_key_exists($key, $_SERVER)
+                || getenv($key) !== false) {
                 continue;
             }
 
@@ -447,8 +487,13 @@ final class Repository
     }
 
     /**
-     * Replaces every `${VAR}` reference with the value of `VAR`, guarding
-     * against circular references (which resolve to an empty string).
+     * Replaces every `${VAR}` reference with the value of `VAR`.
+     *
+     * Cycle handling lives in {@see get()} / {@see resolve()}: a reference
+     * back to a name that is already being resolved short-circuits to an
+     * empty string. A reference to an undefined or non-scalar value also
+     * resolves to an empty string; a scalar is inserted via PHP's string
+     * cast (so `true` becomes `"1"`, `false`/`null` become `""`).
      *
      * @param string $data
      * @return string
@@ -457,16 +502,11 @@ final class Repository
     {
         $result = preg_replace_callback('/\${([^}]+)}/', function (array $match): string {
             $name = trim($match[1], " \t\n\r\0\x0B\"'");
-            if ($name === '' || \in_array($name, $this->resolving, true)) {
+            if ($name === '') {
                 return '';
             }
 
-            $this->resolving[] = $name;
-            try {
-                $value = $this->get($name);
-            } finally {
-                array_pop($this->resolving);
-            }
+            $value = $this->get($name);
 
             return \is_scalar($value) ? (string) $value : '';
         }, $data);

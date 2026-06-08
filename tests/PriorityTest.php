@@ -54,6 +54,21 @@ final class PriorityTest extends DotEnvTestCase
         self::assertSame('original', (new Repository())->get('EXISTING_KEY'));
     }
 
+    public function testCreateDoesNotOverwriteGetenvOnlyValue(): void
+    {
+        // A real environment variable can be visible via getenv() while
+        // absent from $_ENV/$_SERVER (variables_order without "E"). It must
+        // still win over a .env file value.
+        unset($_ENV['GETENV_ONLY'], $_SERVER['GETENV_ONLY']);
+        $this->putenvValue('GETENV_ONLY', 'real-from-environment');
+
+        $file = $this->writeFile("GETENV_ONLY=overwritten-by-file\n");
+        (new Repository())->create($file);
+
+        self::assertSame('real-from-environment', getenv('GETENV_ONLY'));
+        self::assertSame('real-from-environment', (new Repository())->get('GETENV_ONLY'));
+    }
+
     public function testCreatePopulatesAllThreeStores(): void
     {
         $file = $this->writeFile("WRITTEN=value\n");

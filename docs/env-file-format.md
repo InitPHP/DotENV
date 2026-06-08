@@ -85,6 +85,10 @@ An inline comment is still recognised after the closing quote:
 TOKEN = "abc" # secret   # -> abc
 ```
 
+Escape sequences are **not** processed inside quotes — `\n`, `\t` and `\"`
+are kept literally. If you need those characters, set them another way (for
+example through a [`.env.php`](php-env-file.md) file).
+
 > **Note:** quoting changes how the *line* is parsed, not how the *value* is
 > resolved later. `${VAR}` interpolation and type coercion happen when you call
 > `get()`, regardless of whether the value was quoted in the file. See
