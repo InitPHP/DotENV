@@ -14,6 +14,7 @@
 declare(strict_types=1);
 
 use InitPHP\DotENV\DotENV;
+use InitPHP\DotENV\Drift\DriftReport;
 
 if (!function_exists('env')) {
     /**
@@ -26,5 +27,24 @@ if (!function_exists('env')) {
     function env(string $name, mixed $default = null): mixed
     {
         return DotENV::get($name, $default);
+    }
+}
+
+if (!function_exists('env_drift')) {
+    /**
+     * Compares the shared environment against a reference and reports drift.
+     *
+     * Thin global wrapper over {@see DotENV::drift()}. See that method for the
+     * accepted reference shapes (a `.env.example` path or a required-keys
+     * array) and the available options.
+     *
+     * @param string|array<int|string, mixed> $reference Reference file path or
+     *                                                    required-keys list.
+     * @param array{extra?: bool, empty?: bool} $options  Opt-in buckets.
+     * @return DriftReport
+     */
+    function env_drift(string|array $reference, array $options = []): DriftReport
+    {
+        return DotENV::drift($reference, $options);
     }
 }

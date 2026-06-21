@@ -13,6 +13,7 @@ coercion and `${VAR}` interpolation on read.
 | [Using a `.env.php` file](php-env-file.md) | Returning a native PHP array instead of plain text. |
 | [Variable interpolation](variable-interpolation.md) | `${VAR}` references, nesting, and circular-reference handling. |
 | [Value types](value-types.md) | How `true`/`false`/`null`/`empty`, ints and floats are coerced. |
+| [Environment drift](env-drift.md) | Compare the loaded env against a `.env.example` or required-keys list. |
 | [API reference](api-reference.md) | Every public method and the `env()` helper. |
 | [Exceptions](exceptions.md) | What is thrown, when, and how to catch it. |
 | [Security notes](security.md) | Keeping `.env` files out of reach and the `.env.php` caveat. |

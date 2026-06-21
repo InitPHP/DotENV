@@ -4,6 +4,23 @@ All notable changes to `initphp/dotenv` are documented here. The format is
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [3.1.0] - 2026-06-21
+
+### Added
+
+- **Environment drift detection.** `Repository::drift()` /
+  `DotENV::drift()` compare the loaded environment against a reference — a
+  `.env.example` file path *or* a required-keys array — and return a
+  `DriftReport` listing **missing** keys (in the reference, not in the
+  environment), optional **extra** keys (loaded but undocumented) and optional
+  **empty** required keys. `Repository::assertNoDrift()` /
+  `DotENV::assertNoDrift()` add a strict, fail-fast mode that throws a
+  `DriftException` (carrying the report) for CI gates. A global `env_drift()`
+  helper mirrors `DotENV::drift()`. The check is read-only and fully opt-in;
+  existing load/parse behaviour is unchanged.
+
 ## [3.0.0]
 
 A maintenance-focused major release: real bug fixes, corrected value
@@ -76,6 +93,7 @@ documentation. The public API (`DotENV::create`, `get`, `env`, and the global
 
 - Initial release.
 
+[Unreleased]: https://github.com/InitPHP/DotENV/compare/3.0.0...HEAD
 [3.0.0]: https://github.com/InitPHP/DotENV/releases/tag/3.0.0
 [2.0.1]: https://github.com/InitPHP/DotENV/releases/tag/2.0.1
 [2.0]: https://github.com/InitPHP/DotENV/releases/tag/2.0

@@ -1,15 +1,17 @@
 # Exceptions
 
-The package throws a single exception type:
+The package throws from a single base type:
 
 `InitPHP\DotENV\Exceptions\DotENVException`
 
 It extends `\InvalidArgumentException`, so existing
-`catch (\InvalidArgumentException $e)` blocks keep working.
+`catch (\InvalidArgumentException $e)` blocks keep working. The strict
+[drift](env-drift.md) mode adds a `DriftException` subclass of it.
 
 ```
 \InvalidArgumentException
  └── InitPHP\DotENV\Exceptions\DotENVException
+      └── InitPHP\DotENV\Exceptions\DriftException
 ```
 
 ## When it is thrown
@@ -26,6 +28,31 @@ of `true`:
 | A `.env.php` file did not return an array | *The ".env.php" file must return an associative array.* |
 
 `get()` / `env()` never throw for a missing key — they return the default.
+
+## `DriftException`
+
+`InitPHP\DotENV\Exceptions\DriftException`
+
+Thrown only by the strict [drift](env-drift.md) mode,
+`Repository::assertNoDrift()` / `DotENV::assertNoDrift()`, when the loaded
+environment drifts from its reference. It extends `DotENVException` (and thus
+`\InvalidArgumentException`), and carries the offending report:
+
+```php
+use InitPHP\DotENV\DotENV;
+use InitPHP\DotENV\Exceptions\DriftException;
+
+try {
+    DotENV::assertNoDrift(__DIR__ . '/.env.example');
+} catch (DriftException $e) {
+    $e->getMessage();              // human-readable summary
+    $e->getReport()->getMissing(); // the missing keys
+}
+```
+
+The non-throwing `drift()` method never throws for drift — it returns a
+`DriftReport`. It can still raise a `DotENVException` if a *reference file path*
+cannot be found or read (an array reference never throws).
 
 ## Suppressing exceptions
 

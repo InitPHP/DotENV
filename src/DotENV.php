@@ -27,6 +27,8 @@ namespace InitPHP\DotENV;
  * @method static mixed get(string $name, mixed $default = null)
  * @method static mixed env(string $name, mixed $default = null)
  * @method static void  flush()
+ * @method static \InitPHP\DotENV\Drift\DriftReport drift(string|array<int|string, mixed> $reference, array{extra?: bool, empty?: bool} $options = [])
+ * @method static void assertNoDrift(string|array<int|string, mixed> $reference, array{extra?: bool, empty?: bool} $options = [])
  *
  * @see Repository
  */

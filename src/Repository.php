@@ -15,8 +15,11 @@ declare(strict_types=1);
 
 namespace InitPHP\DotENV;
 
+use InitPHP\DotENV\Drift\DriftReport;
 use InitPHP\DotENV\Exceptions\DotENVException;
+use InitPHP\DotENV\Exceptions\DriftException;
 
+use function array_keys;
 use function array_pop;
 use function basename;
 use function explode;
@@ -209,6 +212,210 @@ final class Repository
         $this->loaded = [];
         $this->cache = [];
         $this->resolving = [];
+    }
+
+    /**
+     * Compares the loaded environment against a reference and reports drift.
+     *
+     * The reference declares the keys that *should* be present. It can be:
+     *
+     * - a **path** to a `.env` / `.env.php` file (typically `.env.example`),
+     *   parsed with the same grammar {@see create()} uses, or
+     * - an **array of required key names** (`['DB_HOST', 'DB_PORT']`), or
+     * - an **associative array** (`['DB_HOST' => 'localhost']`); only its keys
+     *   are used for the comparison.
+     *
+     * A key is considered present in the actual environment when it is defined
+     * in `$_ENV`, `$_SERVER`, or `getenv()` — the same three sources
+     * {@see get()} reads from.
+     *
+     * Buckets in the returned {@see DriftReport}:
+     *
+     * - **missing** — a reference key absent from the actual environment.
+     * - **extra** — a key this repository loaded that is not in the reference.
+     *   Off by default (usually noise); enable with `['extra' => true]`. Only
+     *   keys this instance defined are candidates, so unrelated OS variables
+     *   are never reported.
+     * - **empty** — a reference key that is present but resolves to an empty
+     *   value. Off by default; enable with `['empty' => true]`.
+     *
+     * This is a read-only diagnostic: it never defines, reads-through, or
+     * mutates any environment value, so existing load/parse behaviour is
+     * untouched.
+     *
+     * @param string|array<int|string, mixed> $reference Reference file path or
+     *                                                    required-keys list.
+     * @param array{extra?: bool, empty?: bool} $options  Opt-in buckets.
+     * @return DriftReport
+     * @throws DotENVException When a reference *file path* cannot be located,
+     *                         read, or parsed. An array reference never throws.
+     */
+    public function drift(string|array $reference, array $options = []): DriftReport
+    {
+        $referenceKeys = $this->referenceKeys($reference);
+        $withExtra = ($options['extra'] ?? false) === true;
+        $withEmpty = ($options['empty'] ?? false) === true;
+
+        // Membership set for O(1) "is this key in the reference?" lookups.
+        $referenceSet = [];
+        foreach ($referenceKeys as $key) {
+            $referenceSet[$key] = true;
+        }
+
+        $missing = [];
+        $empty = [];
+        foreach ($referenceKeys as $key) {
+            if (!$this->isDefined($key)) {
+                $missing[] = $key;
+                continue;
+            }
+            if ($withEmpty && $this->isEmptyValue($key)) {
+                $empty[] = $key;
+            }
+        }
+
+        $extra = [];
+        if ($withExtra) {
+            foreach (array_keys($this->loaded) as $key) {
+                if (!\array_key_exists($key, $referenceSet)) {
+                    $extra[] = $key;
+                }
+            }
+        }
+
+        return new DriftReport($missing, $extra, $empty);
+    }
+
+    /**
+     * Strict, fail-fast counterpart of {@see drift()} for CI gates.
+     *
+     * Runs the same comparison and throws a {@see DriftException} (carrying the
+     * {@see DriftReport}) the moment any drift is found; returns silently when
+     * the environment is clean.
+     *
+     * @param string|array<int|string, mixed> $reference Reference file path or
+     *                                                    required-keys list.
+     * @param array{extra?: bool, empty?: bool} $options  Opt-in buckets.
+     * @return void
+     * @throws DriftException  When drift is detected.
+     * @throws DotENVException When a reference file path cannot be loaded.
+     */
+    public function assertNoDrift(string|array $reference, array $options = []): void
+    {
+        $report = $this->drift($reference, $options);
+        if ($report->hasDrift()) {
+            throw new DriftException($report);
+        }
+    }
+
+    /**
+     * Normalises a reference into a de-duplicated list of key names.
+     *
+     * A string is treated as a file path and parsed with the package's own
+     * grammar. A list of strings is taken as required key names. An
+     * associative array contributes its keys.
+     *
+     * @param string|array<int|string, mixed> $reference
+     * @return list<string>
+     * @throws DotENVException
+     */
+    private function referenceKeys(string|array $reference): array
+    {
+        if (\is_string($reference)) {
+            return array_keys($this->parseReference($reference));
+        }
+
+        $keys = [];
+        foreach ($reference as $key => $value) {
+            // List form: ['DB_HOST', 'DB_PORT'] — the value *is* the key name.
+            // Map form:  ['DB_HOST' => '...']   — the array key is the name.
+            $name = \is_int($key) ? $value : $key;
+            if (\is_string($name) && $name !== '' && !\array_key_exists($name, $keys)) {
+                $keys[$name] = true;
+            }
+        }
+
+        return array_keys($keys);
+    }
+
+    /**
+     * Parses a reference file into a key/value map for drift comparison.
+     *
+     * Unlike {@see create()}, a reference file is conventionally named
+     * `.env.example` / `.env.sample` (anything), so the loadable-filename
+     * allow-list is deliberately not enforced — only the keys are read, never
+     * defined. A directory argument is resolved to the `.env` / `.env.php`
+     * inside it; a `*.php` file is `require`d and must return an array;
+     * everything else is parsed with the `.env` line grammar.
+     *
+     * @param string $path
+     * @return array<string, mixed>
+     * @throws DotENVException When the file is missing, unreadable, or a
+     *                         `.php` reference does not return an array.
+     */
+    private function parseReference(string $path): array
+    {
+        if (is_dir($path)) {
+            $found = $this->locateInDirectory($path);
+            if ($found === null) {
+                throw new DotENVException('The reference ".env" or ".env.php" file could not be found in the directory you specified.');
+            }
+            $path = $found;
+        }
+
+        if (!is_file($path)) {
+            throw new DotENVException(\sprintf('The reference file "%s" could not be found.', $path));
+        }
+
+        if (substr($path, -8) === '.env.php') {
+            $values = $this->requirePhpFile($path);
+            if (!\is_array($values)) {
+                throw new DotENVException('The reference ".env.php" file must return an associative array.');
+            }
+            $normalised = [];
+            foreach ($values as $key => $value) {
+                $normalised[(string) $key] = $value;
+            }
+
+            return $normalised;
+        }
+
+        $lines = is_readable($path)
+            ? file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES)
+            : false;
+        if ($lines === false) {
+            throw new DotENVException(\sprintf('The reference file "%s" could not be read.', $path));
+        }
+
+        return $this->parseLines($lines);
+    }
+
+    /**
+     * Whether a name is defined in any of the three sources {@see get()} reads.
+     *
+     * @param string $name
+     * @return bool
+     */
+    private function isDefined(string $name): bool
+    {
+        return \array_key_exists($name, $_ENV)
+            || \array_key_exists($name, $_SERVER)
+            || getenv($name) !== false;
+    }
+
+    /**
+     * Whether a defined name resolves to an empty value. A value is empty when
+     * the coerced result is an empty string, `null`, or `false` — the forms a
+     * `.env` file produces for a blank, `empty`, `null` or `false` entry.
+     *
+     * @param string $name
+     * @return bool
+     */
+    private function isEmptyValue(string $name): bool
+    {
+        $value = $this->get($name);
+
+        return $value === '' || $value === null || $value === false;
     }
 
     /**

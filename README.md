@@ -93,9 +93,82 @@ Full details: [`docs/`](docs/README.md).
 | `DotENV::env(string $name, mixed $default = null)` | `mixed` | Alias of `get()`. |
 | `DotENV::flush()` | `void` | Unload everything this instance defined. |
 | `DotENV::reset()` | `void` | `flush()` and drop the shared instance. |
+| `DotENV::drift(string\|array $reference, array $options = [])` | `DriftReport` | Compare the loaded env against a reference and report drift. |
+| `DotENV::assertNoDrift(string\|array $reference, array $options = [])` | `void` | Strict mode: throw `DriftException` when drift is found. |
 | `env(string $name, mixed $default = null)` | `mixed` | Global helper for `DotENV::get()`. |
+| `env_drift(string\|array $reference, array $options = [])` | `DriftReport` | Global helper for `DotENV::drift()`. |
 
 See the [API reference](docs/api-reference.md) for details.
+
+## Env drift
+
+Once an env file is loaded you can check it for **drift** against a reference —
+the keys that *should* be present. It catches the failure that bites in
+CI/production: a key your code expects that was never provisioned.
+
+The reference can be a **`.env.example` path** (the usual convention) or a
+**required-keys array**:
+
+```php
+use InitPHP\DotENV\DotENV;
+
+DotENV::create('/home/www/.env');
+
+// Reference = a checked-in example file.
+$report = DotENV::drift('/home/www/.env.example');
+
+// Reference = an explicit required-keys list.
+$report = DotENV::drift(['DB_HOST', 'DB_PORT', 'APP_KEY']);
+
+if ($report->hasDrift()) {
+    echo $report;                 // human-readable summary for the log
+    $report->getMissing();        // ['APP_KEY']
+    $report->toArray();           // ['missing' => [...], 'extra' => [...], 'empty' => [...]]
+}
+```
+
+Drift is grouped into three buckets:
+
+| Bucket | Meaning | Default |
+| ------ | ------- | ------- |
+| **missing** | a reference key absent from the actual environment | always reported |
+| **extra** | a key this loader defined that is **not** in the reference | opt-in (`['extra' => true]`) |
+| **empty** | a reference key that is present but blank | opt-in (`['empty' => true]`) |
+
+`extra` and `empty` are off by default: extra keys are usually noise, and only
+keys *this loader defined* are ever considered for `extra` (unrelated OS
+variables are never reported).
+
+```php
+// Also flag undocumented and blank-but-required keys.
+$report = DotENV::drift('/home/www/.env.example', ['extra' => true, 'empty' => true]);
+```
+
+### Strict mode (CI gate)
+
+`assertNoDrift()` runs the same comparison and throws a
+[`DriftException`](docs/exceptions.md) the moment any drift is found — drop it
+into a bootstrap or a CI check to fail fast:
+
+```php
+use InitPHP\DotENV\Exceptions\DriftException;
+
+try {
+    DotENV::assertNoDrift('/home/www/.env.example');
+} catch (DriftException $e) {
+    fwrite(STDERR, $e->getMessage() . PHP_EOL);
+    fwrite(STDERR, implode(', ', $e->getReport()->getMissing()) . PHP_EOL);
+    exit(1);
+}
+```
+
+`DriftException` extends `DotENVException` (and `InvalidArgumentException`), so
+existing catch blocks keep working, and the offending `DriftReport` is attached
+via `getReport()`.
+
+Drift checking is **read-only**: it never defines, reads-through, or mutates any
+environment value, so it is safe to run after `create()` without changing what
+is loaded. See [`docs/env-drift.md`](docs/env-drift.md) for the full reference.
 
 ## Notes
 
