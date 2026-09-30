@@ -4,6 +4,7 @@ Loads environment variables from a `.env` or `.env.php` file into PHP's
 environment (`$_ENV`, `$_SERVER`, `getenv()`), with type coercion and
 `${VAR}` interpolation.
 
+[![Designed & Maintained with Tan](https://www.muhammetsafak.com.tr/badges/designed-maintained-with-tan.svg)](https://www.muhammetsafak.com.tr/en/tan/)
 [![CI](https://github.com/InitPHP/DotENV/actions/workflows/ci.yml/badge.svg)](https://github.com/InitPHP/DotENV/actions/workflows/ci.yml)
 [![Latest Stable Version](http://poser.pugx.org/initphp/dotenv/v)](https://packagist.org/packages/initphp/dotenv) [![Total Downloads](http://poser.pugx.org/initphp/dotenv/downloads)](https://packagist.org/packages/initphp/dotenv) [![License](http://poser.pugx.org/initphp/dotenv/license)](https://packagist.org/packages/initphp/dotenv) [![PHP Version Require](http://poser.pugx.org/initphp/dotenv/require/php)](https://packagist.org/packages/initphp/dotenv)
 
