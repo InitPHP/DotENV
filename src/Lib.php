@@ -10,10 +10,10 @@
  * (via PSR-4 autoloading of the `Lib` symbol) registers the legacy name as
  * an alias of the new class, so `new InitPHP\DotENV\Lib()` keeps working.
  *
- * @author     Muhammet ŞAFAK <info@muhammetsafak.com.tr>
+ * @author     Muhammet ŞAFAK <info@muhammetsafak.com>
  * @copyright  Copyright © 2022 InitPHP
  * @license    https://github.com/InitPHP/DotENV/blob/main/LICENSE  MIT
- * @link       https://www.muhammetsafak.com.tr
+ * @link       https://muhammetsafak.com
  *
  * @deprecated 3.0 Use {@see \InitPHP\DotENV\Repository} instead.
  */
