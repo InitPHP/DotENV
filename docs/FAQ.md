@@ -94,8 +94,8 @@ when the name is free).
 
 ### Which PHP versions are supported?
 
-PHP **8.2 through 8.5** (tested on each in CI). For PHP 5.6–7.x, use the `2.0.x`
-line. See [Migration from 2.x](Migration-from-2.x.md).
+PHP **8.2 through 8.5** (tested on each in CI). For PHP 8.0–8.1, use the `3.x` line (`composer require initphp/dotenv:^3.1`). For
+PHP 5.6–7.x, use the `2.0.x` line. See [Migration from 2.x](Migration-from-2.x.md).
 
 ## Next steps
 
