@@ -10,7 +10,7 @@ environment (`$_ENV`, `$_SERVER`, `getenv()`), with type coercion and
 
 ## Requirements
 
-- PHP 8.0 or higher
+- PHP 8.2 or higher
 - No extensions beyond the PHP core
 
 ## Installation
@@ -201,7 +201,7 @@ See the [changelog](CHANGELOG.md) for the full list.
 ## Contributing
 
 Bug reports and pull requests are welcome. The CI runs PHP-CS-Fixer, PHPStan
-(max level) and PHPUnit across PHP 8.0–8.4; run the same bundle locally with:
+(max level) and PHPUnit across PHP 8.2–8.5; run the same bundle locally with:
 
 ```bash
 composer ci

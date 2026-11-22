@@ -119,7 +119,7 @@ final class CreateTest extends DotEnvTestCase
     private function makeUnreadable(string $contents): string
     {
         $file = $this->writeFile($contents);
-        chmod($file, 0000);
+        chmod($file, 0o000);
         if (is_readable($file)) {
             self::markTestSkipped('Filesystem does not enforce read permissions here (running as root?).');
         }

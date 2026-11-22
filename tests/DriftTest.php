@@ -203,7 +203,7 @@ final class DriftTest extends DotEnvTestCase
     public function testUnreadableReferenceFileThrows(): void
     {
         $file = $this->writeFile("KEY=\n", '.env.example');
-        chmod($file, 0000);
+        chmod($file, 0o000);
         if (is_readable($file)) {
             self::markTestSkipped('Filesystem does not enforce read permissions here (running as root?).');
         }
@@ -220,7 +220,7 @@ final class DriftTest extends DotEnvTestCase
 
         self::assertSame(
             ['missing' => ['M'], 'extra' => ['E'], 'empty' => ['B']],
-            $report->toArray()
+            $report->toArray(),
         );
         self::assertSame(3, $report->count());
     }

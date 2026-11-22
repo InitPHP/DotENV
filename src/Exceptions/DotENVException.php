@@ -23,6 +23,4 @@ use InvalidArgumentException;
  * Extends {@see InvalidArgumentException} for backwards compatibility, so
  * existing `catch (\InvalidArgumentException $e)` blocks keep working.
  */
-class DotENVException extends InvalidArgumentException
-{
-}
+class DotENVException extends InvalidArgumentException {}
