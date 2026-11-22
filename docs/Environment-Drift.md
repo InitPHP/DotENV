@@ -1,4 +1,4 @@
-# Environment drift
+# Environment Drift
 
 After an env file is loaded, **drift detection** compares the *actual loaded
 environment* against a *reference* — the keys that should be present — and
@@ -91,7 +91,7 @@ if ($report->hasDrift()) {
 ## Strict mode: `assertNoDrift()`
 
 `assertNoDrift()` runs the same comparison and throws a
-[`DriftException`](exceptions.md) the moment any drift is found, returning
+[`DriftException`](Error-Handling.md#driftexception) the moment any drift is found, returning
 silently when the environment is clean. It is the fail-fast form for a
 bootstrap guard or a CI step:
 
@@ -110,7 +110,7 @@ try {
 }
 ```
 
-`DriftException` extends [`DotENVException`](exceptions.md) (and therefore
+`DriftException` extends [`DotENVException`](API-Reference.md#dotenvexception) (and therefore
 `\InvalidArgumentException`), so it is catchable by existing handlers, and the
 offending `DriftReport` is attached via `getReport()`.
 
@@ -129,3 +129,9 @@ $report = $env->drift(['APP_KEY']);
 // Global helper over the shared facade instance:
 $report = env_drift('/home/www/.env.example', ['extra' => true]);
 ```
+
+## Next steps
+
+- [API Reference](API-Reference.md#drift) — signatures for `drift()`, `assertNoDrift()`, `env_drift()` and `DriftReport`
+- [Error Handling](Error-Handling.md#driftexception) — `DriftException` and what it carries
+- [Recipes](Recipes.md) — other bootstrap patterns
