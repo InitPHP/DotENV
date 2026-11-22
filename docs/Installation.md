@@ -12,7 +12,7 @@ runtime dependencies** and needs **no PHP extensions** beyond the core.
 | Composer | For installation and autoloading. |
 
 > Still on PHP 5.6–7.x? Use the `2.0.x` line (`composer require initphp/dotenv:^2.0`).
-> The 3.x series requires PHP 8.0+ and the current development line requires PHP 8.2+. See [Migration from 2.x](Migration-from-2.x.md).
+> The 3.x series requires PHP 8.0+ and 4.0.0 requires PHP 8.2+. See [Migration from 2.x](Migration-from-2.x.md).
 
 ## Install
 

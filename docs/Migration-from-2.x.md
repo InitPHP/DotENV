@@ -14,8 +14,8 @@ composer require initphp/dotenv:^3.0
 
 ### 1. PHP 8.0+ is now required
 
-The minimum PHP version went from **5.6** to **8.0** in 3.0 (the current
-development line has since raised it to **8.2**; see the
+The minimum PHP version went from **5.6** to **8.0** in 3.0 (version
+4.0.0 raises it to **8.2**; see the
 [changelog](https://github.com/InitPHP/DotENV/blob/main/CHANGELOG.md)). If you are on an older
 PHP, stay on the `2.0.x` line:
 
