@@ -83,7 +83,7 @@ $env->get('SITE_URL');
 - `true` / `false` / `null` / `empty` and round-tripping numbers are coerced;
   everything else stays a string.
 
-Full details: [`docs/`](docs/README.md).
+Full details: [`docs/`](docs/Home.md).
 
 ## API summary
 
@@ -99,7 +99,7 @@ Full details: [`docs/`](docs/README.md).
 | `env(string $name, mixed $default = null)` | `mixed` | Global helper for `DotENV::get()`. |
 | `env_drift(string\|array $reference, array $options = [])` | `DriftReport` | Global helper for `DotENV::drift()`. |
 
-See the [API reference](docs/api-reference.md) for details.
+See the [API reference](docs/API-Reference.md) for details.
 
 ## Env drift
 
@@ -148,7 +148,7 @@ $report = DotENV::drift('/home/www/.env.example', ['extra' => true, 'empty' => t
 ### Strict mode (CI gate)
 
 `assertNoDrift()` runs the same comparison and throws a
-[`DriftException`](docs/exceptions.md) the moment any drift is found — drop it
+[`DriftException`](docs/Error-Handling.md#driftexception) the moment any drift is found — drop it
 into a bootstrap or a CI check to fail fast:
 
 ```php
@@ -169,7 +169,7 @@ via `getReport()`.
 
 Drift checking is **read-only**: it never defines, reads-through, or mutates any
 environment value, so it is safe to run after `create()` without changing what
-is loaded. See [`docs/env-drift.md`](docs/env-drift.md) for the full reference.
+is loaded. See [`docs/Environment-Drift.md`](docs/Environment-Drift.md) for the full reference.
 
 ## Notes
 
@@ -177,10 +177,10 @@ is loaded. See [`docs/env-drift.md`](docs/env-drift.md) for the full reference.
   overwritten, so real environment variables win over a committed `.env`.
 - **`$debug`:** when `false`, `create()` swallows every error (missing file,
   wrong type, unreadable) instead of throwing a
-  [`DotENVException`](docs/exceptions.md).
+  [`DotENVException`](docs/API-Reference.md#dotenvexception).
 - **Security:** keep `.env` files out of the web root, and remember a
   `.env.php` file is executed as code — see the
-  [security notes](docs/security.md).
+  [security notes](docs/Security-Best-Practices.md).
 
 ## Upgrading from 2.x
 
