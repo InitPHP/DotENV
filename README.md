@@ -201,7 +201,7 @@ See the [changelog](CHANGELOG.md) for the full list.
 ## Contributing
 
 Bug reports and pull requests are welcome. The CI runs PHP-CS-Fixer, PHPStan
-(max level) and PHPUnit across PHP 8.2–8.5; run the same bundle locally with:
+(max level) and PHPUnit across PHP 8.2–8.6; run the same bundle locally with:
 
 ```bash
 composer ci

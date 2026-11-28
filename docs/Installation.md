@@ -134,7 +134,7 @@ composer cs-fix         # PHP-CS-Fixer, fixes in place
 composer ci             # cs-check + stan + test, in sequence
 ```
 
-All of these run on CI for every push and pull request across PHP 8.2–8.5.
+All of these run on CI for every push and pull request across PHP 8.2–8.6.
 
 ## Next steps
 
