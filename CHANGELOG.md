@@ -108,6 +108,7 @@ documentation. The public API (`DotENV::create`, `get`, `env`, and the global
 
 - Initial release.
 
+[Unreleased]: https://github.com/InitPHP/DotENV/compare/4.0.0...HEAD
 [4.0.0]: https://github.com/InitPHP/DotENV/compare/3.1.0...4.0.0
 [3.0.0]: https://github.com/InitPHP/DotENV/releases/tag/3.0.0
 [2.0.1]: https://github.com/InitPHP/DotENV/releases/tag/2.0.1
